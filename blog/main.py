@@ -17,7 +17,7 @@ def get_db():
         db.close()
 @app.post('/blog', status_code=status.HTTP_201_CREATED, tags=["Blogs"])
 def create_blog(blog_post: schemas.BlogPost, db: Session = Depends(get_db)):
-    new_blog = models.Blog(title=blog_post.title, body=blog_post.body)
+    new_blog = models.Blog(title=blog_post.title, body=blog_post.body, user_id = 1)
     db.add(new_blog)
     db.commit()
     db.refresh(new_blog)
