@@ -1,8 +1,9 @@
 from fastapi import FastAPI, Depends, status, Response, HTTPException 
-from . import schemas,models
+from . import schemas,models,hashing
 from .database import engine, SessionLocal
 from sqlalchemy.orm import Session
 from typing import List
+
 app = FastAPI()
 
 
@@ -59,7 +60,13 @@ def update(id, blog_post: schemas.BlogPost, db: Session = Depends(get_db)):
 
 @app.post('/user', status_code=status.HTTP_201_CREATED)
 def create_user(user: schemas.User, db: Session = Depends(get_db)):
-    new_user = models.User(name=user.name, email=user.email, password=user.password)
+    # Check if user already exists
+    existing_user = db.query(models.User).filter(models.User.email == user.email).first()
+    if existing_user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
+
+
+    new_user = models.User(name=user.name, email=user.email, password=hashing.Hash.argon2(user.password))
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
