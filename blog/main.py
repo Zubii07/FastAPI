@@ -15,7 +15,7 @@ def get_db():
         yield db
     finally:
         db.close()
-@app.post('/blog', status_code=status.HTTP_201_CREATED)
+@app.post('/blog', status_code=status.HTTP_201_CREATED, tags=["Blogs"])
 def create_blog(blog_post: schemas.BlogPost, db: Session = Depends(get_db)):
     new_blog = models.Blog(title=blog_post.title, body=blog_post.body)
     db.add(new_blog)
@@ -24,12 +24,12 @@ def create_blog(blog_post: schemas.BlogPost, db: Session = Depends(get_db)):
     return new_blog
 
 
-@app.get('/blog', response_model=List[schemas.ShowBlog], status_code=200)
+@app.get('/blog', response_model=List[schemas.ShowBlog], status_code=200,tags=["Blogs"])
 def get_all_blogs(db: Session = Depends(get_db)):
     blogs = db.query(models.Blog).all()
     return blogs
 
-@app.get('/blog/{id}', status_code= 200,response_model=schemas.ShowBlog)
+@app.get('/blog/{id}', status_code= 200,response_model=schemas.ShowBlog, tags=["Blogs"])
 def get_blog(id: int, db: Session = Depends(get_db)):
     blog = db.query(models.Blog).filter(models.Blog.id == id).first()
     if not blog:
@@ -37,7 +37,7 @@ def get_blog(id: int, db: Session = Depends(get_db)):
     return blog
 
 
-@app.delete('/blog/{id}', status_code=status.HTTP_204_NO_CONTENT)
+@app.delete('/blog/{id}', status_code=status.HTTP_204_NO_CONTENT, tags=["Blogs"])
 def destroy(id: int, db: Session = Depends(get_db)):
     blog = db.query(models.Blog).filter(models.Blog.id == id)
     if not blog.first():
@@ -47,7 +47,7 @@ def destroy(id: int, db: Session = Depends(get_db)):
     return {"detail": "Blog deleted"}
 
 
-@app.put('/blog/{id}', status_code=status.HTTP_202_ACCEPTED)
+@app.put('/blog/{id}', status_code=status.HTTP_202_ACCEPTED, tags=["Blogs"])
 def update(id, blog_post: schemas.BlogPost, db: Session = Depends(get_db)):
     blog = db.query(models.Blog).filter(models.Blog.id == id)
     if not blog.first():
@@ -58,14 +58,13 @@ def update(id, blog_post: schemas.BlogPost, db: Session = Depends(get_db)):
 
 
 
-@app.post('/user', response_model=schemas.ShowUser,status_code=status.HTTP_201_CREATED)
+@app.post('/user', response_model=schemas.ShowUser,status_code=status.HTTP_201_CREATED,tags=["Users"])
 def create_user(user: schemas.User, db: Session = Depends(get_db)):
     # Check if user already exists
     existing_user = db.query(models.User).filter(models.User.email == user.email).first()
     if existing_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
-
-
+    
     new_user = models.User(name=user.name, email=user.email, password=hashing.Hash.argon2(user.password))
     db.add(new_user)
     db.commit()
