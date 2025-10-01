@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, validator
-from typing import List
+from typing import List, Optional
 
 class BlogPost(BaseModel):
     title: str
@@ -7,28 +7,32 @@ class BlogPost(BaseModel):
 
 class Blog(BlogPost):
     class Config:
-        attributes = True
+        from_attributes = True
 
 class User(BaseModel):
     name: str
     email: str
     password: str
 
-
-class ShowUser(BaseModel):
+class ShowUserBase(BaseModel):
     name: str
     email: str
-    blogs: List
     class Config:
         from_attributes = True
 
-
-
-class ShowBlog(BaseModel):
-    # write here what you want to show. for example
+class ShowBlogBase(BaseModel):
     title: str
     body: str
-    creator: ShowUser
+    class Config:
+        from_attributes = True
+
+class ShowUser(ShowUserBase):
+    blogs: List[ShowBlogBase] = []
+    class Config:
+        from_attributes = True
+
+class ShowBlog(ShowBlogBase):
+    creator: ShowUserBase
     class Config:
         from_attributes = True
 
