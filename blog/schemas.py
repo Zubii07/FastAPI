@@ -36,3 +36,13 @@ class ShowBlog(ShowBlogBase):
     class Config:
         from_attributes = True
 
+class Login(BaseModel):
+    username: str = Field(..., alias='email')
+    password: str
+
+    @validator('username')
+    def email_must_be_valid(cls, v):
+        if '@' not in v:
+            raise ValueError('Invalid email address')
+        return v
+
